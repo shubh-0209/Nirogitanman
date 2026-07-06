@@ -6,6 +6,7 @@ import { DashboardHeader } from "./DashboardHeader";
 import { DashboardContent } from "./layout/DashboardContent";
 import { Role } from "@/features/auth/utils";
 import { NAVIGATION } from "@/config/navigation";
+import { ReminderScheduler } from "@/features/patient/reminders/components/ReminderScheduler";
 
 interface DashboardShellProps {
   children: React.ReactNode;
@@ -20,6 +21,7 @@ export function DashboardShell({ children, userRole, userEmail, userName, userId
 
   return (
     <div className="min-h-screen bg-background flex flex-col md:flex-row">
+      <ReminderScheduler userId={userId} />
       <DashboardSidebar 
         links={NAVIGATION.PATIENT_SIDEBAR} 
         isOpen={isSidebarOpen} 

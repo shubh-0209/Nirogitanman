@@ -21,10 +21,10 @@ export const NAVIGATION = {
     { title: "Symptom Checker", href: `${ROUTES.DASHBOARD}/symptom-checker`, icon: Stethoscope, isPlaceholder: true },
     { title: "Dosha Assessment", href: `${ROUTES.DASHBOARD}/dosha-assessment`, icon: ActivitySquare, isPlaceholder: true },
     { title: "Diet Planner", href: `${ROUTES.DASHBOARD}/diet-planner`, icon: Utensils, isPlaceholder: true },
-    { title: "Appointments", href: `${ROUTES.DASHBOARD}/appointments`, icon: Calendar, isPlaceholder: true },
-    { title: "Medicine Reminder", href: `${ROUTES.DASHBOARD}/medicine-reminder`, icon: Pill, isPlaceholder: true },
+    { title: "Appointments", href: `${ROUTES.DASHBOARD}/appointments`, icon: Calendar },
+    { title: "Medicine Reminders", href: `${ROUTES.DASHBOARD}/medicine-reminders`, icon: Pill },
     { title: "Medical Records", href: `${ROUTES.DASHBOARD}/medical-records`, icon: FileText },
-    { title: "Notifications", href: `${ROUTES.DASHBOARD}/notifications`, icon: Bell, isPlaceholder: true },
+    { title: "Notifications", href: `${ROUTES.DASHBOARD}/notifications`, icon: Bell },
     { title: "Settings", href: `${ROUTES.DASHBOARD}/settings`, icon: Settings },
   ],
 };

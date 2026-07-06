@@ -32,7 +32,9 @@ export default async function DashboardPage() {
     { count: upcomingCount, data: nextAppointment },
     { count: prescriptionsCount, data: prescriptions },
     { count: recordsCount, data: recentRecords },
-    notificationsResponse
+    notificationsResponse,
+    { data: activeReminders },
+    { data: todayLogs }
   ] = await Promise.all([
 
     // Upcoming appointments count & nearest appointment
@@ -63,7 +65,19 @@ export default async function DashboardPage() {
       .eq("user_id", user.id)
       .eq("is_read", false)
       .order("created_at", { ascending: false })
-    : Promise.resolve({ count: 0, data: [] })
+    : Promise.resolve({ count: 0, data: [] }),
+
+    // Active Medicine Reminders
+    supabase.from("medicine_reminders")
+      .select("*")
+      .eq("user_id", user.id)
+      .eq("status", "Active"),
+
+    // Today's Adherence Logs
+    supabase.from("medicine_adherence_logs")
+      .select("*")
+      .eq("user_id", user.id)
+      .eq("scheduled_date", new Date().toISOString().split('T')[0])
   ]);
 
   return (
@@ -80,6 +94,8 @@ export default async function DashboardPage() {
       recentRecords={recentRecords || []}
       prescriptions={prescriptions || []}
       notifications={notificationsResponse.data || []}
+      activeReminders={activeReminders || []}
+      todayLogs={todayLogs || []}
     />
   );
 }

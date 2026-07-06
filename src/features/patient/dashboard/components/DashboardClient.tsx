@@ -33,6 +33,8 @@ type Appointment = Database["public"]["Tables"]["appointments"]["Row"];
 type MedicalRecord = Database["public"]["Tables"]["medical_records"]["Row"];
 type Prescription = Database["public"]["Tables"]["prescriptions"]["Row"];
 type Notification = Database["public"]["Tables"]["notifications"]["Row"];
+type Reminder = Database["public"]["Tables"]["medicine_reminders"]["Row"];
+type AdherenceLog = Database["public"]["Tables"]["medicine_adherence_logs"]["Row"];
 
 interface DashboardClientProps {
   patientId: string;
@@ -47,6 +49,8 @@ interface DashboardClientProps {
   recentRecords: MedicalRecord[];
   prescriptions: Prescription[];
   notifications: Notification[];
+  activeReminders: Reminder[];
+  todayLogs: AdherenceLog[];
 }
 
 export function DashboardClient({
@@ -55,7 +59,9 @@ export function DashboardClient({
   nextAppointment,
   recentRecords,
   prescriptions,
-  notifications
+  notifications,
+  activeReminders,
+  todayLogs
 }: DashboardClientProps) {
   const [greeting, setGreeting] = React.useState("Welcome");
   const [currentDate, setCurrentDate] = React.useState("");
@@ -382,6 +388,76 @@ export function DashboardClient({
                 icon={Pill} 
                 title="No active prescriptions"
                 description="You don't have any ongoing medications."
+              />
+            )}
+          </WidgetContainer>
+
+          {/* Today's Medicines Widget */}
+          <WidgetContainer 
+            title="Today's Medicines"
+            action={
+              <Link href={`${ROUTES.DASHBOARD}/medicine-reminders`} className="text-sm font-medium text-primary hover:underline">
+                View All
+              </Link>
+            }
+          >
+            {activeReminders.length > 0 ? (
+              <div className="space-y-3">
+                {activeReminders.map((med) => {
+                  // Calculate remaining doses
+                  const today = format(new Date(), "yyyy-MM-dd");
+                  const totalDoses = med.reminder_times.length;
+                  const takenDoses = todayLogs.filter(
+                    (l) => l.reminder_id === med.id && l.scheduled_date === today && l.status === "Taken"
+                  ).length;
+                  const remainingDoses = totalDoses - takenDoses;
+
+                  // Find next reminder time
+                  const nowStr = format(new Date(), "HH:mm");
+                  const nextTime = med.reminder_times
+                    .sort()
+                    .find(t => t > nowStr) || med.reminder_times[0];
+
+                  return (
+                    <div key={med.id} className="p-3 rounded-lg border bg-white flex flex-col gap-2">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 rounded bg-teal-50 text-teal-600 flex items-center justify-center shrink-0">
+                            <Pill className="w-4 h-4" />
+                          </div>
+                          <div>
+                            <p className="text-sm font-semibold text-gray-900">{med.medicine_name}</p>
+                            <p className="text-xs text-gray-500">{med.dosage}</p>
+                          </div>
+                        </div>
+                        {remainingDoses > 0 ? (
+                          <div className="text-right">
+                            <p className="text-xs font-medium text-gray-900">Next: {nextTime}</p>
+                            <p className="text-[10px] font-semibold text-amber-600 mt-0.5 bg-amber-50 px-1.5 py-0.5 rounded-md inline-block">
+                              {remainingDoses} left today
+                            </p>
+                          </div>
+                        ) : (
+                          <div className="text-right">
+                            <p className="text-[10px] font-semibold text-green-600 bg-green-50 px-1.5 py-0.5 rounded-md inline-block">
+                              All done today!
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <EmptyState 
+                icon={Pill} 
+                title="No medicines scheduled"
+                description="You have no medicines scheduled for today."
+                action={{
+                  label: "Add Reminder",
+                  href: `${ROUTES.DASHBOARD}/medicine-reminders`
+                }}
               />
             )}
           </WidgetContainer>

@@ -126,6 +126,100 @@ export type Database = {
           },
         ]
       }
+      medicine_adherence_logs: {
+        Row: {
+          id: string
+          recorded_at: string
+          reminder_id: string
+          scheduled_date: string
+          scheduled_time: string
+          status: string
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          recorded_at?: string
+          reminder_id: string
+          scheduled_date: string
+          scheduled_time: string
+          status: string
+          user_id: string
+        }
+        Update: {
+          id?: string
+          recorded_at?: string
+          reminder_id?: string
+          scheduled_date?: string
+          scheduled_time?: string
+          status?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "medicine_adherence_logs_reminder_id_fkey"
+            columns: ["reminder_id"]
+            isOneToOne: false
+            referencedRelation: "medicine_reminders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      medicine_reminders: {
+        Row: {
+          created_at: string
+          dosage: string
+          end_date: string | null
+          frequency: string
+          id: string
+          instructions: string | null
+          medicine_name: string
+          prescription_id: string | null
+          reminder_times: string[]
+          start_date: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          dosage: string
+          end_date?: string | null
+          frequency: string
+          id?: string
+          instructions?: string | null
+          medicine_name: string
+          prescription_id?: string | null
+          reminder_times: string[]
+          start_date: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          dosage?: string
+          end_date?: string | null
+          frequency?: string
+          id?: string
+          instructions?: string | null
+          medicine_name?: string
+          prescription_id?: string | null
+          reminder_times?: string[]
+          start_date?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "medicine_reminders_prescription_id_fkey"
+            columns: ["prescription_id"]
+            isOneToOne: false
+            referencedRelation: "prescriptions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       notifications: {
         Row: {
           created_at: string
@@ -165,7 +259,7 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "notifications_user_id_fkey"
+            foreignKeyName: "notifications_patient_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "profiles"
@@ -339,7 +433,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      generate_medicine_notifications: { Args: never; Returns: undefined }
     }
     Enums: {
       [_ in never]: never
@@ -472,4 +566,3 @@ export const Constants = {
     Enums: {},
   },
 } as const
-
