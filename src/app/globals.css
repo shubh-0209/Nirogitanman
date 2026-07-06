@@ -24,6 +24,12 @@
   --color-border: var(--border);
   --color-destructive: var(--destructive);
   --color-destructive-foreground: var(--destructive-foreground);
+  --color-error: var(--error);
+  --color-error-foreground: var(--error-foreground);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
   --color-accent-foreground: var(--accent-foreground);
   --color-accent: var(--accent);
   --color-muted-foreground: var(--muted-foreground);
@@ -38,93 +44,122 @@
   --color-card: var(--card);
 
   /* Precise Radii */
-  --radius-sm: 4px;
-  --radius-md: 8px;
-  --radius-lg: 12px;
-  --radius-xl: 16px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
   
   /* Precise Shadows */
-  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.05);
-  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.05);
+  --shadow-sm: 0 2px 4px 0 rgb(0 0 0 / 0.02);
+  --shadow-md: 0 4px 12px -2px rgb(0 0 0 / 0.04);
+  --shadow-lg: 0 12px 24px -4px rgb(0 0 0 / 0.06);
 }
 
 :root {
-  /* Minimal Healthcare Palette - Clinical Precision meets Human Empathy */
-  --background: hsl(0 0% 100%); /* Pure White */
-  --foreground: hsl(215 28% 17%); /* Slate 900 */
+  /* Premium Healthcare Palette - Practo inspired */
+  --background: hsl(210 40% 98%); /* slate-50 */
+  --foreground: hsl(222 47% 11%); /* slate-900 */
   
   --card: hsl(0 0% 100%);
-  --card-foreground: hsl(215 28% 17%);
+  --card-foreground: hsl(222 47% 11%);
   
   --popover: hsl(0 0% 100%);
-  --popover-foreground: hsl(215 28% 17%);
+  --popover-foreground: hsl(222 47% 11%);
   
-  /* Primary: Teal (Tailwind teal-500) */
-  --primary: hsl(173 80% 40%); 
+  /* Primary: Softer Healthcare Teal */
+  --primary: hsl(175 60% 40%); 
   --primary-foreground: hsl(0 0% 100%);
   
-  /* Secondary: Emerald (Tailwind emerald-500) */
-  --secondary: hsl(142 71% 45%);
-  --secondary-foreground: hsl(0 0% 100%);
+  /* Secondary / Muted: Slate Gray */
+  --secondary: hsl(214 32% 91%); /* slate-200 */
+  --secondary-foreground: hsl(222 47% 11%); /* slate-900 */
   
-  /* Muted: Gray/Slate (Tailwind slate-50/slate-500) */
-  --muted: hsl(210 40% 98%); /* Slate 50 */
-  --muted-foreground: hsl(215 16% 47%); /* Slate 500 */
+  --muted: hsl(214 32% 91%); /* slate-200 */
+  --muted-foreground: hsl(215 16% 47%); /* slate-500 */
   
-  /* Accent: Restrained Blue (Tailwind blue-50) */
-  --accent: hsl(214 100% 97%);
-  --accent-foreground: hsl(221 83% 53%);
+  /* Accent: Subtle Teal Tint */
+  --accent: hsl(175 60% 95%);
+  --accent-foreground: hsl(175 60% 35%);
   
-  /* Destructive: Muted Red */
+  /* Destructive/Error: Standard Red */
   --destructive: hsl(0 84% 60%);
   --destructive-foreground: hsl(0 0% 100%);
+  --error: hsl(0 84% 60%);
+  --error-foreground: hsl(0 0% 100%);
   
-  --border: hsl(214 32% 91%); /* Slate 200 */
-  --input: hsl(214 32% 91%); /* Slate 200 */
-  --ring: hsl(173 80% 40% / 0.5); /* Soft Teal Focus Ring */
+  /* Success: Standard Green */
+  --success: hsl(142 71% 40%);
+  --success-foreground: hsl(0 0% 100%);
   
-  --radius: 0.5rem; /* 8px default fallback */
+  /* Warning: Standard Amber */
+  --warning: hsl(38 92% 50%);
+  --warning-foreground: hsl(0 0% 100%);
   
+  /* Borders: Very light gray slate-200 */
+  --border: hsl(214 32% 91%); 
+  --input: hsl(214 32% 91%); 
+  --ring: hsl(175 60% 40% / 0.3);
+  
+  --radius: 0.75rem; /* 12px default */
+  
+  /* Sidebar: Pure white */
   --sidebar: hsl(0 0% 100%);
-  --sidebar-foreground: hsl(215 28% 17%);
-  --sidebar-primary: hsl(173 80% 40%);
+  --sidebar-foreground: hsl(222 47% 11%);
+  --sidebar-primary: hsl(175 60% 40%);
   --sidebar-primary-foreground: hsl(0 0% 100%);
-  --sidebar-accent: hsl(210 40% 98%);
-  --sidebar-accent-foreground: hsl(215 28% 17%);
+  --sidebar-accent: hsl(175 60% 95%); /* Primary tint hover */
+  --sidebar-accent-foreground: hsl(175 60% 35%);
   --sidebar-border: hsl(214 32% 91%);
-  --sidebar-ring: hsl(173 80% 40% / 0.5);
+  --sidebar-ring: hsl(175 60% 40% / 0.3);
 }
 
 .dark {
-  /* Dark mode is disabled by spec, but keeping variables valid */
-  --background: hsl(215 28% 17%);
-  --foreground: hsl(0 0% 100%);
-  --card: hsl(215 28% 17%);
-  --card-foreground: hsl(0 0% 100%);
-  --popover: hsl(215 28% 17%);
-  --popover-foreground: hsl(0 0% 100%);
-  --primary: hsl(173 80% 40%);
-  --primary-foreground: hsl(0 0% 100%);
-  --secondary: hsl(142 71% 45%);
-  --secondary-foreground: hsl(0 0% 100%);
-  --muted: hsl(217 33% 25%);
-  --muted-foreground: hsl(215 20% 65%);
-  --accent: hsl(217 33% 25%);
-  --accent-foreground: hsl(221 83% 53%);
-  --destructive: hsl(0 62% 30%);
+  /* Bespoke Dark Mode - True Grays */
+  --background: hsl(0 0% 8%); /* True dark gray */
+  --foreground: hsl(0 0% 93%); /* Off white */
+  
+  --card: hsl(0 0% 12%);
+  --card-foreground: hsl(0 0% 93%);
+  
+  --popover: hsl(0 0% 12%);
+  --popover-foreground: hsl(0 0% 93%);
+  
+  /* Adjusted primary for better dark contrast */
+  --primary: hsl(173 80% 45%); 
+  --primary-foreground: hsl(0 0% 10%); /* Very dark text on primary for contrast */
+  
+  --secondary: hsl(0 0% 20%);
+  --secondary-foreground: hsl(0 0% 93%);
+  
+  --muted: hsl(0 0% 15%);
+  --muted-foreground: hsl(0 0% 65%);
+  
+  --accent: hsl(0 0% 20%);
+  --accent-foreground: hsl(0 0% 93%);
+  
+  --destructive: hsl(0 62% 40%);
   --destructive-foreground: hsl(0 0% 100%);
-  --border: hsl(217 33% 25%);
-  --input: hsl(217 33% 25%);
-  --ring: hsl(173 80% 40% / 0.5);
-  --sidebar: hsl(215 28% 17%);
-  --sidebar-foreground: hsl(0 0% 100%);
-  --sidebar-primary: hsl(173 80% 40%);
-  --sidebar-primary-foreground: hsl(0 0% 100%);
-  --sidebar-accent: hsl(217 33% 25%);
-  --sidebar-accent-foreground: hsl(0 0% 100%);
-  --sidebar-border: hsl(217 33% 25%);
-  --sidebar-ring: hsl(173 80% 40% / 0.5);
+  --error: hsl(0 62% 40%);
+  --error-foreground: hsl(0 0% 100%);
+  
+  --success: hsl(142 60% 45%);
+  --success-foreground: hsl(0 0% 100%);
+  
+  --warning: hsl(38 80% 55%);
+  --warning-foreground: hsl(0 0% 100%);
+  
+  --border: hsl(0 0% 20%);
+  --input: hsl(0 0% 20%);
+  --ring: hsl(173 80% 45% / 0.5);
+  
+  --sidebar: hsl(0 0% 10%); /* Slightly lighter/darker than background */
+  --sidebar-foreground: hsl(0 0% 93%);
+  --sidebar-primary: hsl(173 80% 45%);
+  --sidebar-primary-foreground: hsl(0 0% 10%);
+  --sidebar-accent: hsl(0 0% 15%);
+  --sidebar-accent-foreground: hsl(0 0% 93%);
+  --sidebar-border: hsl(0 0% 18%);
+  --sidebar-ring: hsl(173 80% 45% / 0.5);
 }
 
 @layer base {
@@ -167,7 +202,11 @@
 
   /* Link styles */
   a {
-    @apply transition-colors hover:text-primary;
+    @apply transition-colors hover:text-primary duration-200;
+  }
+  
+  button {
+    @apply transition-all duration-200;
   }
 
   /* Image defaults */

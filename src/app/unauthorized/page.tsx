@@ -7,19 +7,13 @@ import { getUserRole } from "@/features/auth/utils";
 export default async function UnauthorizedPage() {
   const role = await getUserRole();
   
-  let backLink: string = ROUTES.HOME;
+  let backLink: string = ROUTES.LOGIN;
   let backText = "Return Home";
 
-  if (role === "PATIENT") {
-    backLink = ROUTES.DASHBOARD.PATIENT;
+  if (role) {
+    backLink = ROUTES.DASHBOARD;
     backText = "Back to Dashboard";
-  } else if (role === "DOCTOR") {
-    backLink = ROUTES.DASHBOARD.DOCTOR;
-    backText = "Back to Dashboard";
-  } else if (role === "ADMIN") {
-    backLink = ROUTES.DASHBOARD.ADMIN;
-    backText = "Back to Dashboard";
-  } else if (!role) {
+  } else {
     backLink = ROUTES.LOGIN;
     backText = "Sign In";
   }

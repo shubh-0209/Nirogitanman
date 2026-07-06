@@ -3,14 +3,11 @@ import { Container } from "@/components/layout/Container";
 import { buttonVariants } from "@/components/ui/button";
 import Link from "next/link";
 import { FileQuestion } from "lucide-react";
-import { Header } from "@/components/layout/Header";
-import { Footer } from "@/components/layout/Footer";
 import { PageWrapper } from "@/components/layout/PageWrapper";
 
 export default function NotFound() {
   return (
     <PageWrapper>
-      <Header />
       <Section className="flex-1 flex items-center justify-center bg-slate-50 dark:bg-slate-950">
         <Container className="max-w-md text-center">
           <div className="mx-auto flex h-24 w-24 items-center justify-center rounded-full bg-primary/10 mb-8">
@@ -22,11 +19,9 @@ export default function NotFound() {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link href="/" className={buttonVariants({ size: "lg" })}>Return to Home</Link>
-            <Link href="/contact" className={buttonVariants({ size: "lg", variant: "outline" })}>Contact Support</Link>
           </div>
         </Container>
       </Section>
-      <Footer />
     </PageWrapper>
   );
 }

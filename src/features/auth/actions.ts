@@ -47,7 +47,7 @@ export async function login(input: LoginInput) {
   });
 
   revalidatePath("/", "layout");
-  redirect(ROUTES.HOME); // Middleware will redirect to appropriate dashboard
+  redirect("/login"); // Middleware will redirect to appropriate dashboard
 }
 
 export async function register(input: RegisterInput) {
@@ -78,6 +78,16 @@ export async function register(input: RegisterInput) {
   }
 
   if (data.user) {
+    try {
+      // Attempt to assign PATIENT role automatically, ignore failure if table doesn't exist yet
+      await supabase.from("user_roles").insert({
+        user_id: data.user.id,
+        role: "PATIENT",
+      });
+    } catch {
+      // Silently ignore table missing errors as per MVP requirements
+    }
+
     await logAuthEvent("REGISTER", {
       userId: data.user.id,
       email: data.user.email,
@@ -105,6 +115,28 @@ export async function logout() {
   await supabase.auth.signOut();
   revalidatePath("/", "layout");
   redirect(ROUTES.LOGIN);
+}
+
+export async function loginWithGoogle() {
+  const supabase = await createClient();
+
+  const headerStore = await headers();
+  const origin = headerStore.get("origin") || process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+
+  const { data, error } = await supabase.auth.signInWithOAuth({
+    provider: "google",
+    options: {
+      redirectTo: `${origin}/auth/callback`,
+    },
+  });
+
+  if (error) {
+    return { error: error.message };
+  }
+
+  if (data.url) {
+    redirect(data.url);
+  }
 }
 
 export async function resetPasswordForEmail(input: ForgotPasswordInput) {

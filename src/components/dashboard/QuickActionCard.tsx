@@ -16,18 +16,18 @@ export function QuickActionCard({ title, description, icon: Icon, href, classNam
     <Link 
       href={href}
       className={cn(
-        "group flex items-start gap-4 p-4 rounded-xl border border-slate-200 bg-white hover:border-primary/30 hover:shadow-sm transition-all",
+        "group flex items-start gap-4 p-5 sm:p-6 rounded-2xl border border-border bg-card hover:border-primary/30 hover:shadow-md transition-all duration-300",
         className
       )}
     >
-      <div className="h-10 w-10 bg-slate-50 text-slate-600 rounded-lg flex items-center justify-center flex-shrink-0 group-hover:bg-primary/10 group-hover:text-primary transition-colors">
+      <div className="h-10 w-10 bg-muted text-muted-foreground rounded-lg flex items-center justify-center flex-shrink-0 group-hover:bg-primary/10 group-hover:text-primary transition-colors">
         <Icon className="h-5 w-5" />
       </div>
-      <div className="flex-1">
-        <h4 className="text-sm font-semibold text-slate-900 group-hover:text-primary transition-colors">{title}</h4>
-        <p className="text-sm text-slate-500 mt-1">{description}</p>
+      <div className="flex-1 min-w-0">
+        <h4 className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors">{title}</h4>
+        <p className="text-sm text-muted-foreground mt-1">{description}</p>
       </div>
-      <ChevronRight className="h-5 w-5 text-slate-400 group-hover:text-primary transition-colors self-center opacity-0 group-hover:opacity-100 -translate-x-2 group-hover:translate-x-0" />
+      <ChevronRight className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors self-center opacity-0 group-hover:opacity-100 -translate-x-2 group-hover:translate-x-0" />
     </Link>
   );
 }

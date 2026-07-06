@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { loginWithGoogle } from "../server/actions";
+import { loginWithGoogle } from "../actions";
 import { useState } from "react";
 import { Spinner } from "@/components/feedback/Spinner";
 
