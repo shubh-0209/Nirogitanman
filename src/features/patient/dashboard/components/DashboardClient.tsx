@@ -23,7 +23,9 @@ import { WidgetContainer } from "@/components/dashboard/WidgetContainer";
 import { EmptyState } from "@/components/dashboard/EmptyState";
 import { StatusBadge } from "@/components/dashboard/StatusBadge";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { ROUTES } from "@/config/routes";
+import { createClient } from "@/lib/supabase/client";
 import { Database } from "@/lib/supabase/database.types";
 
 type Profile = Database["public"]["Tables"]["profiles"]["Row"];
@@ -57,6 +59,42 @@ export function DashboardClient({
 }: DashboardClientProps) {
   const [greeting, setGreeting] = React.useState("Welcome");
   const [currentDate, setCurrentDate] = React.useState("");
+  const router = useRouter();
+  const supabase = createClient();
+
+  React.useEffect(() => {
+    const channel = supabase
+      .channel('dashboard_realtime')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'appointments',
+          filter: profile ? `patient_id=eq.${profile.id}` : undefined
+        },
+        () => {
+          router.refresh();
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'notifications',
+          filter: profile ? `user_id=eq.${profile.id}` : undefined
+        },
+        () => {
+          router.refresh();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [supabase, router, profile]);
 
   React.useEffect(() => {
     const now = new Date();
@@ -353,9 +391,15 @@ export function DashboardClient({
             {notifications.length > 0 ? (
               <div className="space-y-3">
                 {notifications.map((notif) => (
-                  <div key={notif.id} className="p-3 rounded-lg bg-gray-50 border border-gray-100">
-                    <p className="text-sm font-medium text-gray-900">{notif.title}</p>
-                    <p className="text-xs text-gray-500 mt-1">{notif.message}</p>
+                  <div key={notif.id} className="p-3 rounded-lg bg-gray-50 border border-gray-100 flex flex-col gap-1">
+                    <div className="flex items-center justify-between">
+                      <p className="text-sm font-medium text-gray-900 line-clamp-1">{notif.title}</p>
+                      {!notif.is_read && <span className="w-2 h-2 rounded-full bg-primary shrink-0" />}
+                    </div>
+                    <p className="text-xs text-gray-500 line-clamp-2">{notif.message}</p>
+                    <Link href={`${ROUTES.DASHBOARD}/notifications`} className="text-[10px] font-semibold text-primary mt-1 hover:underline">
+                      View Details &rarr;
+                    </Link>
                   </div>
                 ))}
               </div>

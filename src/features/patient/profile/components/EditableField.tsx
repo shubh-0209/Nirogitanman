@@ -39,7 +39,7 @@ interface EditableFieldProps {
   inputType?: "text" | "textarea" | "number" | "select" | "radio" | "switch" | "date";
   placeholder?: string;
   options?: { label: string; value: string }[];
-  valueFormatter?: (value: any) => string;
+  valueFormatter?: (value: unknown) => string;
 }
 
 export function EditableField({

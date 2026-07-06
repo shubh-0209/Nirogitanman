@@ -4,8 +4,10 @@ export const bookAppointmentSchema = z.object({
   department: z.string().min(2, "Please select a department"),
   appointmentDate: z.string().min(1, "Date is required"),
   appointmentTime: z.string().min(1, "Time is required"),
-  consultationMode: z.enum(["In-person", "Video"]),
-  reasonForVisit: z.string().min(5, "Please briefly describe the reason for your visit"),
+  consultationMode: z.string().min(1, "Consultation mode is required"),
+  appointmentType: z.string().min(1, "Visit type is required"),
+  reasonForVisit: z.string().min(10, "Please provide more details (at least 10 characters)"),
+  notes: z.string().optional(),
 });
 
 export type BookAppointmentInput = z.infer<typeof bookAppointmentSchema>;

@@ -24,6 +24,7 @@ export default async function PatientDashboardLayout({
       userRole={role || "PATIENT"}
       userEmail={user.email || ""}
       userName={profile?.full_name || "Complete your profile"}
+      userId={user.id}
     >
       {children}
     </DashboardShell>

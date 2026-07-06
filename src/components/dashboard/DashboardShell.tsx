@@ -12,9 +12,10 @@ interface DashboardShellProps {
   userRole: Role;
   userEmail: string;
   userName: string;
+  userId: string;
 }
 
-export function DashboardShell({ children, userRole, userEmail, userName }: DashboardShellProps) {
+export function DashboardShell({ children, userRole, userEmail, userName, userId }: DashboardShellProps) {
   const [isSidebarOpen, setIsSidebarOpen] = React.useState(false);
 
   return (
@@ -31,6 +32,7 @@ export function DashboardShell({ children, userRole, userEmail, userName }: Dash
           userEmail={userEmail}
           userName={userName}
           userRole={userRole}
+          userId={userId}
         />
         <DashboardContent>
           {children}

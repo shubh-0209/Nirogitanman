@@ -8,7 +8,7 @@ import { PageWrapper } from "@/components/layout/PageWrapper";
 export default function NotFound() {
   return (
     <PageWrapper>
-      <Section className="flex-1 flex items-center justify-center bg-slate-50 dark:bg-slate-950">
+      <Section className="flex-1 flex items-center justify-center bg-slate-50 ">
         <Container className="max-w-md text-center">
           <div className="mx-auto flex h-24 w-24 items-center justify-center rounded-full bg-primary/10 mb-8">
             <FileQuestion className="h-12 w-12 text-primary" />

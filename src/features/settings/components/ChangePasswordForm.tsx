@@ -10,10 +10,15 @@ import { Label } from "@/components/ui/label";
 import { DashboardCard } from "@/components/dashboard/DashboardCard";
 import { Loader2, Key } from "lucide-react";
 import { toast } from "sonner";
+import { createClient } from "@/lib/supabase/client";
 
 const changePasswordSchema = z.object({
-  currentPassword: z.string().min(1, "Current password is required"),
-  newPassword: z.string().min(8, "Password must be at least 8 characters"),
+  newPassword: z.string()
+    .min(8, "Password must be at least 8 characters")
+    .regex(/[A-Z]/, "Password must contain at least one uppercase letter")
+    .regex(/[a-z]/, "Password must contain at least one lowercase letter")
+    .regex(/[0-9]/, "Password must contain at least one number")
+    .regex(/[^A-Za-z0-9]/, "Password must contain at least one special character"),
   confirmPassword: z.string()
 }).refine(data => data.newPassword === data.confirmPassword, {
   message: "Passwords do not match",
@@ -34,12 +39,25 @@ export function ChangePasswordForm() {
     resolver: zodResolver(changePasswordSchema),
   });
 
-  const onSubmit = () => {
+  const onSubmit = (data: ChangePasswordInput) => {
     startTransition(async () => {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      toast.success("Password changed successfully");
-      reset();
+      try {
+        const supabase = createClient();
+        
+        const { error } = await supabase.auth.updateUser({
+          password: data.newPassword
+        });
+
+        if (error) {
+          toast.error(error.message || "Failed to update password.");
+          return;
+        }
+
+        toast.success("Password changed successfully.");
+        reset();
+      } catch (err) {
+        toast.error("An unexpected error occurred.");
+      }
     });
   };
 
@@ -49,11 +67,6 @@ export function ChangePasswordForm() {
       description="Update your password to keep your account secure."
     >
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 pt-4 max-w-md">
-        <div className="space-y-2">
-          <Label htmlFor="currentPassword">Current Password</Label>
-          <Input id="currentPassword" type="password" {...register("currentPassword")} />
-          {errors.currentPassword && <p className="text-sm text-red-500">{errors.currentPassword.message}</p>}
-        </div>
         
         <div className="space-y-2">
           <Label htmlFor="newPassword">New Password</Label>

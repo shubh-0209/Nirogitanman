@@ -4,7 +4,7 @@ import * as React from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { CalendarIcon, Loader2, Plus } from "lucide-react";
-import { format } from "date-fns";
+import { format, parse } from "date-fns";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
@@ -54,6 +54,13 @@ const DEPARTMENTS = [
   "Ophthalmology",
 ];
 
+const VISIT_TYPES = [
+  "Consultation",
+  "Follow-up",
+  "Annual Checkup",
+  "Emergency Request",
+];
+
 const TIME_SLOTS = [
   "09:00 AM",
   "09:30 AM",
@@ -61,11 +68,11 @@ const TIME_SLOTS = [
   "10:30 AM",
   "11:00 AM",
   "11:30 AM",
-  "14:00 PM",
-  "14:30 PM",
-  "15:00 PM",
-  "15:30 PM",
-  "16:00 PM",
+  "02:00 PM",
+  "02:30 PM",
+  "03:00 PM",
+  "03:30 PM",
+  "04:00 PM",
 ];
 
 export function BookAppointmentDialog({ patientId }: { patientId: string }) {
@@ -81,20 +88,54 @@ export function BookAppointmentDialog({ patientId }: { patientId: string }) {
       appointmentDate: "",
       appointmentTime: "",
       consultationMode: "In-person",
+      appointmentType: "",
       reasonForVisit: "",
+      notes: "",
     },
   });
 
   const onSubmit = (data: BookAppointmentInput) => {
     startTransition(async () => {
       try {
+        // Validate past times on today's date
+        const selectedDate = new Date(data.appointmentDate);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        if (selectedDate.getTime() === today.getTime()) {
+          const timeString = data.appointmentTime; // e.g., "09:00 AM"
+          const parsedTime = parse(timeString, "hh:mm a", new Date());
+          if (parsedTime < new Date()) {
+            form.setError("appointmentTime", { message: "Cannot select a past time for today." });
+            return;
+          }
+        }
+
+        // Check for duplicates
+        const { data: existingAppts, error: fetchError } = await supabase
+          .from('appointments')
+          .select('id')
+          .eq('patient_id', patientId)
+          .eq('appointment_date', data.appointmentDate)
+          .eq('appointment_time', data.appointmentTime)
+          .in('status', ['Scheduled', 'Pending Confirmation']);
+
+        if (fetchError) throw fetchError;
+
+        if (existingAppts && existingAppts.length > 0) {
+          form.setError("appointmentTime", { message: "You already have an appointment at this time." });
+          return;
+        }
+
         const { error } = await supabase.from('appointments').insert({
           patient_id: patientId,
           department: data.department,
           appointment_date: data.appointmentDate,
           appointment_time: data.appointmentTime,
           consultation_mode: data.consultationMode,
+          appointment_type: data.appointmentType,
           reason_for_visit: data.reasonForVisit,
+          notes: data.notes || null,
           status: 'Scheduled'
         });
 
@@ -108,7 +149,7 @@ export function BookAppointmentDialog({ patientId }: { patientId: string }) {
         if (error instanceof Error) {
           toast.error(error.message);
         } else {
-          toast.error("Failed to book appointment");
+          toast.error("Failed to book appointment. Please try again.");
         }
       }
     });
@@ -120,7 +161,7 @@ export function BookAppointmentDialog({ patientId }: { patientId: string }) {
         <Plus className="w-5 h-5 mr-2" />
         Book Appointment
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="sm:max-w-[550px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Book an Appointment</DialogTitle>
           <DialogDescription>
@@ -130,28 +171,54 @@ export function BookAppointmentDialog({ patientId }: { patientId: string }) {
         
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 pt-4">
-            <FormField
-              control={form.control}
-              name="department"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Department</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select a department" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {DEPARTMENTS.map(dept => (
-                        <SelectItem key={dept} value={dept}>{dept}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            
+            <div className="grid grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="department"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Department</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select department" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {DEPARTMENTS.map(dept => (
+                          <SelectItem key={dept} value={dept}>{dept}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="appointmentType"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Visit Type</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select type" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {VISIT_TYPES.map(type => (
+                          <SelectItem key={type} value={type}>{type}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
 
             <div className="grid grid-cols-2 gap-4">
               <FormField
@@ -248,6 +315,24 @@ export function BookAppointmentDialog({ patientId }: { patientId: string }) {
                   <FormControl>
                     <Textarea 
                       placeholder="Briefly describe your symptoms or reason for booking..." 
+                      className="resize-none" 
+                      {...field} 
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="notes"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Additional Notes (Optional)</FormLabel>
+                  <FormControl>
+                    <Textarea 
+                      placeholder="Any other information the doctor should know..." 
                       className="resize-none" 
                       {...field} 
                     />

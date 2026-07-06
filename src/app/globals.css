@@ -2,7 +2,7 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
-@custom-variant dark (&:is(.dark *));
+
 
 @theme inline {
   --color-background: var(--background);
@@ -107,59 +107,10 @@
   --sidebar-foreground: hsl(222 47% 11%);
   --sidebar-primary: hsl(175 60% 40%);
   --sidebar-primary-foreground: hsl(0 0% 100%);
-  --sidebar-accent: hsl(175 60% 95%); /* Primary tint hover */
-  --sidebar-accent-foreground: hsl(175 60% 35%);
+  --sidebar-accent: hsl(210 40% 96%); /* Very light gray hover */
+  --sidebar-accent-foreground: hsl(222 47% 11%);
   --sidebar-border: hsl(214 32% 91%);
   --sidebar-ring: hsl(175 60% 40% / 0.3);
-}
-
-.dark {
-  /* Bespoke Dark Mode - True Grays */
-  --background: hsl(0 0% 8%); /* True dark gray */
-  --foreground: hsl(0 0% 93%); /* Off white */
-  
-  --card: hsl(0 0% 12%);
-  --card-foreground: hsl(0 0% 93%);
-  
-  --popover: hsl(0 0% 12%);
-  --popover-foreground: hsl(0 0% 93%);
-  
-  /* Adjusted primary for better dark contrast */
-  --primary: hsl(173 80% 45%); 
-  --primary-foreground: hsl(0 0% 10%); /* Very dark text on primary for contrast */
-  
-  --secondary: hsl(0 0% 20%);
-  --secondary-foreground: hsl(0 0% 93%);
-  
-  --muted: hsl(0 0% 15%);
-  --muted-foreground: hsl(0 0% 65%);
-  
-  --accent: hsl(0 0% 20%);
-  --accent-foreground: hsl(0 0% 93%);
-  
-  --destructive: hsl(0 62% 40%);
-  --destructive-foreground: hsl(0 0% 100%);
-  --error: hsl(0 62% 40%);
-  --error-foreground: hsl(0 0% 100%);
-  
-  --success: hsl(142 60% 45%);
-  --success-foreground: hsl(0 0% 100%);
-  
-  --warning: hsl(38 80% 55%);
-  --warning-foreground: hsl(0 0% 100%);
-  
-  --border: hsl(0 0% 20%);
-  --input: hsl(0 0% 20%);
-  --ring: hsl(173 80% 45% / 0.5);
-  
-  --sidebar: hsl(0 0% 10%); /* Slightly lighter/darker than background */
-  --sidebar-foreground: hsl(0 0% 93%);
-  --sidebar-primary: hsl(173 80% 45%);
-  --sidebar-primary-foreground: hsl(0 0% 10%);
-  --sidebar-accent: hsl(0 0% 15%);
-  --sidebar-accent-foreground: hsl(0 0% 93%);
-  --sidebar-border: hsl(0 0% 18%);
-  --sidebar-ring: hsl(173 80% 45% / 0.5);
 }
 
 @layer base {

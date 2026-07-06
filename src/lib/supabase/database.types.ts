@@ -128,39 +128,45 @@ export type Database = {
       }
       notifications: {
         Row: {
-          action_url: string | null
           created_at: string
           id: string
           is_read: boolean | null
           message: string
-          patient_id: string
+          reference_id: string | null
+          reference_type: string | null
           title: string
           type: string
+          updated_at: string | null
+          user_id: string
         }
         Insert: {
-          action_url?: string | null
           created_at?: string
           id?: string
           is_read?: boolean | null
           message: string
-          patient_id: string
+          reference_id?: string | null
+          reference_type?: string | null
           title: string
           type: string
+          updated_at?: string | null
+          user_id: string
         }
         Update: {
-          action_url?: string | null
           created_at?: string
           id?: string
           is_read?: boolean | null
           message?: string
-          patient_id?: string
+          reference_id?: string | null
+          reference_type?: string | null
           title?: string
           type?: string
+          updated_at?: string | null
+          user_id?: string
         }
         Relationships: [
           {
-            foreignKeyName: "notifications_patient_id_fkey"
-            columns: ["patient_id"]
+            foreignKeyName: "notifications_user_id_fkey"
+            columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
@@ -304,6 +310,30 @@ export type Database = {
         }
         Relationships: []
       }
+      user_settings: {
+        Row: {
+          created_at: string | null
+          dashboard_notifications: boolean
+          theme_preference: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          dashboard_notifications?: boolean
+          theme_preference?: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          dashboard_notifications?: boolean
+          theme_preference?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -442,3 +472,4 @@ export const Constants = {
     Enums: {},
   },
 } as const
+

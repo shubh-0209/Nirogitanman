@@ -1,6 +1,6 @@
 import * as React from "react";
 import { format, parseISO } from "date-fns";
-import { Calendar, Clock, Video, MapPin, CheckCircle2, XCircle, AlertCircle, Building2 } from "lucide-react";
+import { Calendar, Clock, Video, MapPin, CheckCircle2, XCircle, HelpCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
@@ -17,15 +17,15 @@ interface AppointmentCardProps {
 }
 
 export function AppointmentCard({ appointment, onReschedule, onCancel, onViewDetails }: AppointmentCardProps) {
-  const isUpcoming = appointment.status === "Scheduled" || appointment.status === "Rescheduled";
+  const isUpcoming = appointment.status === "Scheduled" || appointment.status === "Rescheduled" || appointment.status === "Pending Confirmation";
   const isCancelled = appointment.status === "Cancelled";
   const isCompleted = appointment.status === "Completed";
 
   const getStatusConfig = () => {
     if (isCompleted) return { icon: CheckCircle2, class: "bg-emerald-100 text-emerald-700 hover:bg-emerald-100 border-emerald-200" };
     if (isCancelled) return { icon: XCircle, class: "bg-rose-100 text-rose-700 hover:bg-rose-100 border-rose-200" };
-    if (appointment.status === "Rescheduled") return { icon: AlertCircle, class: "bg-amber-100 text-amber-700 hover:bg-amber-100 border-amber-200" };
-    return { icon: Calendar, class: "bg-blue-100 text-blue-700 hover:bg-blue-100 border-blue-200" }; // Scheduled
+    if (appointment.status === "Pending Confirmation") return { icon: HelpCircle, class: "bg-amber-100 text-amber-700 hover:bg-amber-100 border-amber-200" };
+    return { icon: Calendar, class: "bg-teal-100 text-teal-700 hover:bg-teal-100 border-teal-200" }; // Scheduled/Rescheduled
   };
 
   const StatusIcon = getStatusConfig().icon;
@@ -34,6 +34,10 @@ export function AppointmentCard({ appointment, onReschedule, onCancel, onViewDet
   const dateStr = appointment.appointment_date 
     ? format(parseISO(appointment.appointment_date), "EEEE, MMMM d, yyyy") 
     : "Date TBD";
+
+  const createdStr = appointment.created_at
+    ? format(parseISO(appointment.created_at), "MMM d, yyyy")
+    : "Unknown";
 
   return (
     <div className={cn(
@@ -46,8 +50,8 @@ export function AppointmentCard({ appointment, onReschedule, onCancel, onViewDet
           <p className="text-sm font-semibold text-primary uppercase tracking-wider mb-1">
             {appointment.appointment_date ? format(parseISO(appointment.appointment_date), "MMM d") : "TBD"}
           </p>
-          <div className="flex items-center text-foreground font-medium text-lg">
-            <Clock className="w-5 h-5 mr-2 text-muted-foreground" />
+          <div className="flex items-center text-gray-900 font-medium text-lg">
+            <Clock className="w-5 h-5 mr-2 text-gray-500" />
             {appointment.appointment_time}
           </div>
         </div>
@@ -60,10 +64,11 @@ export function AppointmentCard({ appointment, onReschedule, onCancel, onViewDet
       {/* Main Content */}
       <div className="flex-1 space-y-4">
         <div>
-          <h3 className="text-xl font-bold text-foreground mb-2">
-            {appointment.department} Consultation
+          <h3 className="text-xl font-bold text-gray-900 mb-1">
+            {appointment.department} 
+            {appointment.appointment_type ? ` - ${appointment.appointment_type}` : " Consultation"}
           </h3>
-          <div className="flex flex-wrap gap-y-2 gap-x-6 text-sm text-muted-foreground font-medium">
+          <div className="flex flex-wrap gap-y-2 gap-x-6 text-sm text-gray-500 font-medium">
             <div className="flex items-center">
               <Calendar className="w-4 h-4 mr-2" />
               {dateStr}
@@ -76,21 +81,26 @@ export function AppointmentCard({ appointment, onReschedule, onCancel, onViewDet
               )}
               {appointment.consultation_mode}
             </div>
-            {appointment.doctor_id && (
-              <div className="flex items-center">
-                <Building2 className="w-4 h-4 mr-2" />
-                Doctor Assigned
-              </div>
-            )}
+            <div className="flex items-center">
+              <span className="text-xs">Booked on {createdStr}</span>
+            </div>
           </div>
         </div>
 
-        {appointment.reason_for_visit && (
-          <div className="bg-slate-50 p-3 rounded-lg border border-slate-100">
-            <p className="text-sm text-slate-600 line-clamp-2">
-              <span className="font-semibold text-slate-700 mr-2">Reason:</span>
-              {appointment.reason_for_visit}
-            </p>
+        {(appointment.reason_for_visit || appointment.notes) && (
+          <div className="bg-slate-50 p-3 rounded-lg border border-slate-100 space-y-2">
+            {appointment.reason_for_visit && (
+              <p className="text-sm text-gray-700">
+                <span className="font-semibold text-gray-900 mr-2">Reason:</span>
+                {appointment.reason_for_visit}
+              </p>
+            )}
+            {appointment.notes && (
+              <p className="text-sm text-gray-700">
+                <span className="font-semibold text-gray-900 mr-2">Notes:</span>
+                {appointment.notes}
+              </p>
+            )}
           </div>
         )}
       </div>
@@ -102,10 +112,12 @@ export function AppointmentCard({ appointment, onReschedule, onCancel, onViewDet
         </Button>
         {isUpcoming && (
           <>
-            <Button variant="outline" className="w-full md:w-32" onClick={() => onReschedule(appointment)}>
-              Reschedule
-            </Button>
-            <Button variant="ghost" className="w-full md:w-32 text-rose-600 hover:text-rose-700 hover:bg-rose-50" onClick={() => onCancel(appointment.id)}>
+            {appointment.status === "Scheduled" && (
+              <Button variant="outline" className="w-full md:w-32" onClick={() => onReschedule(appointment)}>
+                Reschedule
+              </Button>
+            )}
+            <Button variant="ghost" className="w-full md:w-32 text-red-600 hover:text-red-700 hover:bg-red-50" onClick={() => onCancel(appointment.id)}>
               Cancel
             </Button>
           </>

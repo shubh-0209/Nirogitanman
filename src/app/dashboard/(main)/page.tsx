@@ -19,12 +19,20 @@ export default async function DashboardPage() {
   const profile = await getCachedProfile(user.id);
   const supabase = await createClient();
 
+  const { data: settings } = await supabase
+    .from("user_settings")
+    .select("dashboard_notifications")
+    .eq("user_id", user.id)
+    .single();
+
+  const showNotifications = settings?.dashboard_notifications ?? true;
+
   // Fetch all dashboard data in parallel
   const [
     { count: upcomingCount, data: nextAppointment },
     { count: prescriptionsCount, data: prescriptions },
     { count: recordsCount, data: recentRecords },
-    { count: unreadNotificationsCount, data: notifications }
+    notificationsResponse
   ] = await Promise.all([
 
     // Upcoming appointments count & nearest appointment
@@ -49,12 +57,13 @@ export default async function DashboardPage() {
       .order("created_at", { ascending: false })
       .limit(5),
 
-    // Unread notifications
-    supabase.from("notifications")
+    // Unread notifications (only if enabled)
+    showNotifications ? supabase.from("notifications")
       .select("*", { count: "exact" })
-      .eq("patient_id", user.id)
+      .eq("user_id", user.id)
       .eq("is_read", false)
       .order("created_at", { ascending: false })
+    : Promise.resolve({ count: 0, data: [] })
   ]);
 
   return (
@@ -65,12 +74,12 @@ export default async function DashboardPage() {
         appointments: upcomingCount || 0,
         prescriptions: prescriptionsCount || 0,
         records: recordsCount || 0,
-        notifications: unreadNotificationsCount || 0
+        notifications: notificationsResponse.count || 0
       }}
       nextAppointment={nextAppointment?.[0] || null}
       recentRecords={recentRecords || []}
       prescriptions={prescriptions || []}
-      notifications={notifications || []}
+      notifications={notificationsResponse.data || []}
     />
   );
 }

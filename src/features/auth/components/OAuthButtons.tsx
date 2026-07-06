@@ -18,7 +18,7 @@ export function OAuthButtons() {
     <Button 
       variant="outline" 
       type="button" 
-      className="w-full h-12 flex items-center justify-center gap-2 border-slate-200 hover:bg-slate-50 dark:border-slate-800 dark:hover:bg-slate-900"
+      className="w-full h-12 flex items-center justify-center gap-2 border-slate-200 hover:bg-slate-50  "
       onClick={handleGoogleLogin}
       disabled={isLoading}
     >
