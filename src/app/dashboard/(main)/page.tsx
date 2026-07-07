@@ -31,7 +31,7 @@ export default async function DashboardPage() {
   const [
     { count: upcomingCount, data: nextAppointment },
     { count: prescriptionsCount, data: prescriptions },
-    { count: recordsCount, data: recentRecords },
+    { count: labReportsCount, data: recentLabReports },
     notificationsResponse,
     { data: activeReminders },
     { data: todayLogs }
@@ -52,10 +52,10 @@ export default async function DashboardPage() {
       .eq("is_active", true)
       .order("start_date", { ascending: false }),
 
-    // Medical records (recent 5)
-    supabase.from("medical_records")
+    // Lab reports (recent 5)
+    supabase.from("lab_reports")
       .select("*", { count: "exact" })
-      .eq("patient_id", user.id)
+      .eq("user_id", user.id)
       .order("created_at", { ascending: false })
       .limit(5),
 
@@ -87,11 +87,11 @@ export default async function DashboardPage() {
       counts={{
         appointments: upcomingCount || 0,
         prescriptions: prescriptionsCount || 0,
-        records: recordsCount || 0,
+        labReports: labReportsCount || 0,
         notifications: notificationsResponse.count || 0
       }}
       nextAppointment={nextAppointment?.[0] || null}
-      recentRecords={recentRecords || []}
+      recentLabReports={recentLabReports || []}
       prescriptions={prescriptions || []}
       notifications={notificationsResponse.data || []}
       activeReminders={activeReminders || []}

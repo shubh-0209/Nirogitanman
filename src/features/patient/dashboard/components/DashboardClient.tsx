@@ -30,7 +30,7 @@ import { Database } from "@/lib/supabase/database.types";
 
 type Profile = Database["public"]["Tables"]["profiles"]["Row"];
 type Appointment = Database["public"]["Tables"]["appointments"]["Row"];
-type MedicalRecord = Database["public"]["Tables"]["medical_records"]["Row"];
+type LabReport = Database["public"]["Tables"]["lab_reports"]["Row"];
 type Prescription = Database["public"]["Tables"]["prescriptions"]["Row"];
 type Notification = Database["public"]["Tables"]["notifications"]["Row"];
 type Reminder = Database["public"]["Tables"]["medicine_reminders"]["Row"];
@@ -42,11 +42,11 @@ interface DashboardClientProps {
   counts: {
     appointments: number;
     prescriptions: number;
-    records: number;
+    labReports: number;
     notifications: number;
   };
   nextAppointment: Appointment | null;
-  recentRecords: MedicalRecord[];
+  recentLabReports: LabReport[];
   prescriptions: Prescription[];
   notifications: Notification[];
   activeReminders: Reminder[];
@@ -57,7 +57,7 @@ export function DashboardClient({
   profile,
   counts,
   nextAppointment,
-  recentRecords,
+  recentLabReports,
   prescriptions,
   notifications,
   activeReminders,
@@ -167,25 +167,25 @@ export function DashboardClient({
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
         <StatCard
           title="Upcoming Visits"
-          value={counts.appointments.toString()}
+          value={counts.appointments}
           icon={Calendar}
           description={counts.appointments > 0 ? "Next one soon" : "None scheduled"}
         />
         <StatCard
           title="Active Prescriptions"
-          value={counts.prescriptions.toString()}
+          value={counts.prescriptions}
           icon={Pill}
           description={counts.prescriptions > 0 ? "Take on time" : "No active meds"}
         />
         <StatCard
-          title="Medical Records"
-          value={counts.records.toString()}
+          title="Lab Reports"
+          value={counts.labReports}
           icon={FileText}
           description="Securely stored"
         />
         <StatCard
           title="Notifications"
-          value={counts.notifications.toString()}
+          value={counts.notifications}
           icon={Bell}
           description={counts.notifications > 0 ? "Action required" : "All caught up"}
         />
@@ -256,30 +256,30 @@ export function DashboardClient({
             )}
           </WidgetContainer>
 
-          {/* Recent Medical Records Widget */}
+          {/* Recent Lab Reports Widget */}
           <WidgetContainer 
-            title="Recent Medical Records"
+            title="Latest Lab Reports"
             action={
-              <Link href={`${ROUTES.DASHBOARD}/medical-records`} className="text-sm font-medium text-primary hover:underline">
+              <Link href={`${ROUTES.DASHBOARD}/lab-reports`} className="text-sm font-medium text-primary hover:underline">
                 View All
               </Link>
             }
           >
-            {recentRecords.length > 0 ? (
+            {recentLabReports.length > 0 ? (
               <div className="space-y-3">
-                {recentRecords.map((record) => (
-                  <div key={record.id} className="flex items-center justify-between p-3 rounded-lg hover:bg-gray-50 border border-transparent hover:border-gray-100 transition-colors">
+                {recentLabReports.map((report) => (
+                  <div key={report.id} className="flex items-center justify-between p-3 rounded-lg hover:bg-gray-50 border border-transparent hover:border-gray-100 transition-colors">
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center">
                         <FileText className="w-5 h-5" />
                       </div>
                       <div>
-                        <p className="font-medium text-gray-900 text-sm">{record.title}</p>
-                        <p className="text-xs text-gray-500">{record.doctor_name || record.hospital_name || record.record_type}</p>
+                        <p className="font-medium text-gray-900 text-sm line-clamp-1">{report.report_name}</p>
+                        <p className="text-xs text-gray-500">{report.report_type} • {report.file_size ? (report.file_size / (1024 * 1024)).toFixed(2) + " MB" : ""}</p>
                       </div>
                     </div>
                     <div className="text-xs text-gray-500">
-                      {format(new Date(record.visit_date), "MMM d, yyyy")}
+                      {format(new Date(report.report_date), "MMM d, yyyy")}
                     </div>
                   </div>
                 ))}
@@ -287,11 +287,11 @@ export function DashboardClient({
             ) : (
               <EmptyState 
                 icon={FileText} 
-                title="No records found"
-                description="Upload your past medical records to access them securely from anywhere."
+                title="No reports found"
+                description="Upload your lab reports to access them securely from anywhere."
                 action={{
-                  label: "Upload Record",
-                  href: `${ROUTES.DASHBOARD}/medical-records`
+                  label: "Upload Report",
+                  href: `${ROUTES.DASHBOARD}/lab-reports`
                 }}
               />
             )}

@@ -14,6 +14,70 @@ export type Database = {
   }
   public: {
     Tables: {
+      ai_conversations: {
+        Row: {
+          created_at: string | null
+          id: string
+          title: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          title: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          title?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_conversations_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ai_messages: {
+        Row: {
+          content: string
+          conversation_id: string
+          created_at: string | null
+          id: string
+          role: string
+        }
+        Insert: {
+          content: string
+          conversation_id: string
+          created_at?: string | null
+          id?: string
+          role: string
+        }
+        Update: {
+          content?: string
+          conversation_id?: string
+          created_at?: string | null
+          id?: string
+          role?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_messages_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "ai_conversations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       appointments: {
         Row: {
           appointment_date: string
@@ -69,6 +133,57 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      lab_reports: {
+        Row: {
+          created_at: string | null
+          doctor_name: string | null
+          file_name: string
+          file_size: number
+          file_url: string
+          hospital_name: string | null
+          id: string
+          mime_type: string
+          notes: string | null
+          report_date: string
+          report_name: string
+          report_type: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          doctor_name?: string | null
+          file_name: string
+          file_size: number
+          file_url: string
+          hospital_name?: string | null
+          id?: string
+          mime_type: string
+          notes?: string | null
+          report_date: string
+          report_name: string
+          report_type: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          doctor_name?: string | null
+          file_name?: string
+          file_size?: number
+          file_url?: string
+          hospital_name?: string | null
+          id?: string
+          mime_type?: string
+          notes?: string | null
+          report_date?: string
+          report_name?: string
+          report_type?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
       }
       medical_records: {
         Row: {

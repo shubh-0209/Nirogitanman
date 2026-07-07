@@ -122,3 +122,29 @@ export async function deleteNotification(notificationId: string) {
     return { error: "An unexpected error occurred" };
   }
 }
+
+export async function deleteAllReadNotifications() {
+  try {
+    const user = await getCachedAuthUser();
+    if (!user) return { error: "Unauthorized" };
+
+    const supabase = await createClient();
+
+    const { error } = await supabase
+      .from("notifications")
+      .delete()
+      .eq("user_id", user.id)
+      .eq("is_read", true);
+
+    if (error) {
+      console.error("Error deleting all read notifications:", error);
+      return { error: "Failed to delete notifications" };
+    }
+
+    revalidatePath(ROUTES.DASHBOARD);
+    return { success: true };
+  } catch (error) {
+    console.error("Unexpected error:", error);
+    return { error: "An unexpected error occurred" };
+  }
+}

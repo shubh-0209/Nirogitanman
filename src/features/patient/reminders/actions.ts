@@ -2,6 +2,7 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
+import { sendNotification } from "@/features/patient/notifications/actions";
 
 export async function createReminder(data: {
   medicine_name: string;
@@ -37,6 +38,13 @@ export async function createReminder(data: {
     console.error("Error creating reminder:", error);
     throw new Error("Failed to create reminder");
   }
+
+  await sendNotification({
+    userId: user.id,
+    type: "Medicine Reminder",
+    title: "New Medicine Reminder",
+    message: `Reminder scheduled for ${data.medicine_name}.`,
+  });
 
   revalidatePath("/dashboard/medicine-reminders");
   revalidatePath("/dashboard");
@@ -185,6 +193,13 @@ export async function recordAdherence(
 
     if (error) throw new Error("Failed to create adherence log");
   }
+
+  await sendNotification({
+    userId: user.id,
+    type: "Medicine Reminder",
+    title: "Adherence Logged",
+    message: `You marked your medicine as ${status}.`,
+  });
 
   revalidatePath("/dashboard/medicine-reminders");
   revalidatePath("/dashboard");

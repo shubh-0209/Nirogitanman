@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { format } from "date-fns";
+import { format, isToday, isYesterday } from "date-fns";
 import {
   Bell,
   Search,
@@ -22,7 +22,7 @@ import { Database } from "@/lib/supabase/database.types";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 import { ROUTES } from "@/config/routes";
-import { markNotificationAsRead, markAllNotificationsAsRead, deleteNotification } from "../actions";
+import { markNotificationAsRead, markAllNotificationsAsRead, deleteNotification, deleteAllReadNotifications } from "../actions";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
@@ -91,6 +91,15 @@ export function NotificationsClient({ initialNotifications, userId }: Notificati
     }
   };
 
+  const handleDeleteAllRead = async () => {
+    const res = await deleteAllReadNotifications();
+    if (res.error) {
+      toast.error(res.error);
+    } else {
+      toast.success("Read notifications deleted");
+    }
+  };
+
   const handleNotificationClick = async (notification: Notification) => {
     if (!notification.is_read) {
       await handleMarkAsRead(notification.id);
@@ -138,6 +147,69 @@ export function NotificationsClient({ initialNotifications, userId }: Notificati
 
   const filterOptions = ["All", "Unread", "Read", "Appointments", "Prescriptions", "Medical Records", "System"];
 
+  const groupedNotifications = {
+    today: filteredNotifications.filter(n => isToday(new Date(n.created_at))),
+    yesterday: filteredNotifications.filter(n => isYesterday(new Date(n.created_at))),
+    earlier: filteredNotifications.filter(n => !isToday(new Date(n.created_at)) && !isYesterday(new Date(n.created_at)))
+  };
+
+  const renderNotification = (notification: Notification) => (
+    <div 
+      key={notification.id} 
+      className={cn(
+        "group relative bg-white p-5 rounded-xl border transition-all duration-200 flex flex-col sm:flex-row sm:items-start gap-4",
+        !notification.is_read ? "border-primary/30 shadow-md bg-teal-50/20" : "border-gray-200 shadow-sm hover:border-gray-300"
+      )}
+    >
+      <div 
+        className={cn(
+          "flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center cursor-pointer",
+          !notification.is_read ? "bg-primary text-white shadow-sm" : "bg-gray-100 text-gray-500 group-hover:bg-gray-200 transition-colors"
+        )}
+        onClick={() => handleNotificationClick(notification)}
+      >
+        {getIcon(notification.type)}
+      </div>
+      
+      <div className="flex-1 min-w-0 cursor-pointer" onClick={() => handleNotificationClick(notification)}>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-1">
+          <h3 className={cn("font-semibold text-base truncate pr-8", !notification.is_read ? "text-gray-900" : "text-gray-700")}>
+            {notification.title}
+          </h3>
+          <span className="text-xs font-medium text-gray-500 whitespace-nowrap">
+            {format(new Date(notification.created_at), "MMM d, h:mm a")}
+          </span>
+        </div>
+        <p className={cn("text-sm", !notification.is_read ? "text-gray-800" : "text-gray-500")}>
+          {notification.message}
+        </p>
+      </div>
+
+      <div className="flex items-center gap-2 sm:absolute sm:top-5 sm:right-5 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity mt-4 sm:mt-0 justify-end">
+        {!notification.is_read && (
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            className="h-8 w-8 text-primary hover:bg-primary/10 hover:text-primary"
+            onClick={(e) => { e.stopPropagation(); handleMarkAsRead(notification.id); }}
+            title="Mark as read"
+          >
+            <CheckCircle2 className="w-4 h-4" />
+          </Button>
+        )}
+        <Button 
+          variant="ghost" 
+          size="icon" 
+          className="h-8 w-8 text-red-500 hover:bg-red-50 hover:text-red-600"
+          onClick={(e) => { e.stopPropagation(); handleDelete(notification.id); }}
+          title="Delete"
+        >
+          <Trash2 className="w-4 h-4" />
+        </Button>
+      </div>
+    </div>
+  );
+
   return (
     <div className="space-y-6 md:space-y-8 animate-in fade-in duration-500 max-w-5xl mx-auto pb-10">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -150,6 +222,12 @@ export function NotificationsClient({ initialNotifications, userId }: Notificati
             <Button variant="outline" onClick={handleMarkAllAsRead} className="shadow-sm">
               <Check className="w-4 h-4 mr-2" />
               Mark All Read
+            </Button>
+          )}
+          {notifications.some(n => n.is_read) && (
+            <Button variant="outline" onClick={handleDeleteAllRead} className="shadow-sm text-red-600 hover:text-red-700 hover:bg-red-50">
+              <Trash2 className="w-4 h-4 mr-2" />
+              Delete All Read
             </Button>
           )}
         </div>
@@ -183,64 +261,28 @@ export function NotificationsClient({ initialNotifications, userId }: Notificati
         </div>
       </div>
 
-      <div className="space-y-4">
+      <div className="space-y-8">
         {filteredNotifications.length > 0 ? (
-          filteredNotifications.map((notification) => (
-            <div 
-              key={notification.id} 
-              className={cn(
-                "group relative bg-white p-5 rounded-xl border transition-all duration-200 flex flex-col sm:flex-row sm:items-start gap-4",
-                !notification.is_read ? "border-primary/30 shadow-md bg-teal-50/20" : "border-gray-200 shadow-sm hover:border-gray-300"
-              )}
-            >
-              <div 
-                className={cn(
-                  "flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center cursor-pointer",
-                  !notification.is_read ? "bg-primary text-white shadow-sm" : "bg-gray-100 text-gray-500 group-hover:bg-gray-200 transition-colors"
-                )}
-                onClick={() => handleNotificationClick(notification)}
-              >
-                {getIcon(notification.type)}
+          <>
+            {groupedNotifications.today.length > 0 && (
+              <div className="space-y-4">
+                <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider pl-2 border-l-2 border-primary/20">Today</h2>
+                {groupedNotifications.today.map(renderNotification)}
               </div>
-              
-              <div className="flex-1 min-w-0 cursor-pointer" onClick={() => handleNotificationClick(notification)}>
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-1">
-                  <h3 className={cn("font-semibold text-base truncate pr-8", !notification.is_read ? "text-gray-900" : "text-gray-700")}>
-                    {notification.title}
-                  </h3>
-                  <span className="text-xs font-medium text-gray-500 whitespace-nowrap">
-                    {format(new Date(notification.created_at), "MMM d, h:mm a")}
-                  </span>
-                </div>
-                <p className={cn("text-sm", !notification.is_read ? "text-gray-800" : "text-gray-500")}>
-                  {notification.message}
-                </p>
+            )}
+            {groupedNotifications.yesterday.length > 0 && (
+              <div className="space-y-4">
+                <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider pl-2 border-l-2 border-gray-200">Yesterday</h2>
+                {groupedNotifications.yesterday.map(renderNotification)}
               </div>
-
-              <div className="flex items-center gap-2 sm:absolute sm:top-5 sm:right-5 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity mt-4 sm:mt-0 justify-end">
-                {!notification.is_read && (
-                  <Button 
-                    variant="ghost" 
-                    size="icon" 
-                    className="h-8 w-8 text-primary hover:bg-primary/10 hover:text-primary"
-                    onClick={(e) => { e.stopPropagation(); handleMarkAsRead(notification.id); }}
-                    title="Mark as read"
-                  >
-                    <CheckCircle2 className="w-4 h-4" />
-                  </Button>
-                )}
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
-                  className="h-8 w-8 text-red-500 hover:bg-red-50 hover:text-red-600"
-                  onClick={(e) => { e.stopPropagation(); handleDelete(notification.id); }}
-                  title="Delete"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </Button>
+            )}
+            {groupedNotifications.earlier.length > 0 && (
+              <div className="space-y-4">
+                <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider pl-2 border-l-2 border-gray-200">Earlier</h2>
+                {groupedNotifications.earlier.map(renderNotification)}
               </div>
-            </div>
-          ))
+            )}
+          </>
         ) : (
           <EmptyState 
             icon={Bell} 
