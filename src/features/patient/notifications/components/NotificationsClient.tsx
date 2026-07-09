@@ -110,7 +110,7 @@ export function NotificationsClient({ initialNotifications, userId }: Notificati
     } else if (notification.reference_type === "prescription") {
       router.push(`${ROUTES.DASHBOARD}/prescriptions`);
     } else if (notification.reference_type === "medical_record") {
-      router.push(`${ROUTES.DASHBOARD}/medical-records`);
+      router.push(`${ROUTES.DASHBOARD}/lab-reports`);
     }
   };
 

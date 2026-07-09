@@ -5,30 +5,29 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { AppointmentCard } from "@/features/patient/appointments/components/AppointmentCard";
-import { BookAppointmentDialog } from "@/features/patient/appointments/components/BookAppointmentDialog";
+import { AppointmentCard, JoinedAppointment } from "@/features/patient/appointments/components/AppointmentCard";
 import { RescheduleDialog } from "@/features/patient/appointments/components/RescheduleDialog";
-import { CalendarX2, CheckCircle2, Clock } from "lucide-react";
+import { CalendarX2, CheckCircle2, Clock, Search, Filter } from "lucide-react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-
-import { Database } from "@/lib/supabase/database.types";
-
-type AppointmentRow = Database['public']['Tables']['appointments']['Row'];
+import { Input } from "@/components/ui/input";
+import { cancelAppointment } from "../actions";
 
 interface AppointmentsClientProps {
   patientId: string;
-  appointments: AppointmentRow[];
+  initialAppointments: JoinedAppointment[];
 }
 
-export function AppointmentsClient({ patientId, appointments }: AppointmentsClientProps) {
+export function AppointmentsClient({ patientId, initialAppointments }: AppointmentsClientProps) {
   const router = useRouter();
   const supabase = createClient();
-  const [rescheduleAppointment, setRescheduleAppointment] = React.useState<AppointmentRow | null>(null);
+  const [rescheduleAppointment, setRescheduleAppointment] = React.useState<JoinedAppointment | null>(null);
   const [cancelAppointmentId, setCancelAppointmentId] = React.useState<string | null>(null);
   const [isCancelling, setIsCancelling] = React.useState(false);
 
-  // Real-time subscription for automatic updates
+  const [searchQuery, setSearchQuery] = React.useState("");
+
+  // We could fetch real-time updates but since we rely on joined data, we'll just refresh route on changes.
   React.useEffect(() => {
     const channel = supabase
       .channel('appointments_changes')
@@ -51,9 +50,19 @@ export function AppointmentsClient({ patientId, appointments }: AppointmentsClie
     };
   }, [supabase, router, patientId]);
 
+  // Filter based on search query
+  const appointments = initialAppointments.filter(app => {
+    if (!searchQuery) return true;
+    const q = searchQuery.toLowerCase();
+    const docName = app.doctors?.full_name?.toLowerCase() || "";
+    const spec = app.doctors?.specialization?.toLowerCase() || "";
+    const date = app.appointment_date || "";
+    return docName.includes(q) || spec.includes(q) || date.includes(q);
+  });
+
   // Group appointments
   const upcomingAppointments = appointments.filter(
-    (app) => app.status === "Scheduled" || app.status === "Rescheduled" || app.status === "Pending Confirmation"
+    (app) => ["Scheduled", "Rescheduled", "Pending Confirmation", "Pending", "Confirmed", "In Progress"].includes(app.status)
   );
   
   const completedAppointments = appointments.filter(
@@ -61,48 +70,52 @@ export function AppointmentsClient({ patientId, appointments }: AppointmentsClie
   );
 
   const cancelledAppointments = appointments.filter(
-    (app) => app.status === "Cancelled"
+    (app) => app.status === "Cancelled" || app.status === "Rejected"
   );
 
   const handleCancel = async (appointmentId: string) => {
     try {
       setIsCancelling(true);
-      const { error } = await supabase
-        .from('appointments')
-        .update({ status: 'Cancelled' })
-        .eq('id', appointmentId);
+      const res = await cancelAppointment(appointmentId);
 
-      if (error) throw error;
+      if (!res.success) throw new Error(res.error || "Failed to cancel");
       
       toast.success("Appointment cancelled successfully");
       setCancelAppointmentId(null);
-      // router.refresh() will be triggered automatically by real-time subscription
     } catch (error) {
       if (error instanceof Error) {
         toast.error(error.message);
       } else {
         toast.error("Failed to cancel appointment");
       }
-      setIsCancelling(false); // Only unset here since success unsets via re-render/dialog close
+    } finally {
+      setIsCancelling(false); 
     }
-  };
-
-  const handleViewDetails = (appointment: AppointmentRow) => {
-    toast.info("Viewing details for " + appointment.department);
   };
 
   return (
     <div className="max-w-6xl mx-auto space-y-8 pb-12">
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight text-gray-900">Appointments</h1>
+          <h1 className="text-2xl font-semibold tracking-tight text-gray-900">My Appointments</h1>
           <p className="text-gray-500 mt-1">Manage your upcoming visits and view history.</p>
         </div>
-        <BookAppointmentDialog patientId={patientId} />
+      </div>
+
+      <div className="flex flex-col md:flex-row gap-4 items-center">
+        <div className="relative flex-1 w-full">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input 
+            placeholder="Search by Doctor, Specialization, or Date (YYYY-MM-DD)..." 
+            className="pl-9 w-full bg-white"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+        </div>
       </div>
 
       <Tabs defaultValue="upcoming" className="space-y-6">
-        <TabsList className="bg-white border w-full justify-start h-auto p-1 rounded-xl">
+        <TabsList className="bg-white border w-full justify-start h-auto p-1 rounded-xl overflow-x-auto overflow-y-hidden">
           <TabsTrigger value="upcoming" className="rounded-lg px-6 py-2.5 data-[state=active]:bg-primary/5 data-[state=active]:text-primary data-[state=active]:shadow-none">
             Upcoming ({upcomingAppointments.length})
           </TabsTrigger>
@@ -111,6 +124,9 @@ export function AppointmentsClient({ patientId, appointments }: AppointmentsClie
           </TabsTrigger>
           <TabsTrigger value="cancelled" className="rounded-lg px-6 py-2.5 data-[state=active]:bg-primary/5 data-[state=active]:text-primary data-[state=active]:shadow-none">
             Cancelled ({cancelledAppointments.length})
+          </TabsTrigger>
+          <TabsTrigger value="all" className="rounded-lg px-6 py-2.5 data-[state=active]:bg-primary/5 data-[state=active]:text-primary data-[state=active]:shadow-none">
+            All ({appointments.length})
           </TabsTrigger>
         </TabsList>
 
@@ -129,7 +145,6 @@ export function AppointmentsClient({ patientId, appointments }: AppointmentsClie
                   appointment={app}
                   onReschedule={setRescheduleAppointment}
                   onCancel={(id) => setCancelAppointmentId(id)}
-                  onViewDetails={handleViewDetails}
                 />
               ))}
             </div>
@@ -151,7 +166,6 @@ export function AppointmentsClient({ patientId, appointments }: AppointmentsClie
                   appointment={app}
                   onReschedule={() => {}} 
                   onCancel={() => {}}     
-                  onViewDetails={handleViewDetails}
                 />
               ))}
             </div>
@@ -173,7 +187,27 @@ export function AppointmentsClient({ patientId, appointments }: AppointmentsClie
                   appointment={app}
                   onReschedule={() => {}} 
                   onCancel={() => {}}     
-                  onViewDetails={handleViewDetails}
+                />
+              ))}
+            </div>
+          )}
+        </TabsContent>
+
+        <TabsContent value="all" className="space-y-4 outline-none">
+          {appointments.length === 0 ? (
+            <EmptyState 
+              icon={Clock} 
+              title="No Appointments Found" 
+              description="You don't have any appointments."
+            />
+          ) : (
+            <div className="grid grid-cols-1 gap-4">
+              {appointments.map((app) => (
+                <AppointmentCard
+                  key={app.id}
+                  appointment={app}
+                  onReschedule={setRescheduleAppointment}
+                  onCancel={(id) => setCancelAppointmentId(id)}
                 />
               ))}
             </div>

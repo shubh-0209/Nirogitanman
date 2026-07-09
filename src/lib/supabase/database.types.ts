@@ -87,9 +87,12 @@ export type Database = {
           created_at: string | null
           department: string
           doctor_id: string | null
+          doctor_notes: string | null
           id: string
-          notes: string | null
+          meeting_link: string | null
           patient_id: string
+          patient_notes: string | null
+          prescription_id: string | null
           reason_for_visit: string | null
           status: string
           updated_at: string | null
@@ -102,9 +105,12 @@ export type Database = {
           created_at?: string | null
           department: string
           doctor_id?: string | null
+          doctor_notes?: string | null
           id?: string
-          notes?: string | null
+          meeting_link?: string | null
           patient_id: string
+          patient_notes?: string | null
+          prescription_id?: string | null
           reason_for_visit?: string | null
           status?: string
           updated_at?: string | null
@@ -117,9 +123,12 @@ export type Database = {
           created_at?: string | null
           department?: string
           doctor_id?: string | null
+          doctor_notes?: string | null
           id?: string
-          notes?: string | null
+          meeting_link?: string | null
           patient_id?: string
+          patient_notes?: string | null
+          prescription_id?: string | null
           reason_for_visit?: string | null
           status?: string
           updated_at?: string | null

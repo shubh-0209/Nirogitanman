@@ -34,13 +34,15 @@ export default async function DashboardPage() {
     { count: labReportsCount, data: recentLabReports },
     notificationsResponse,
     { data: activeReminders },
-    { data: todayLogs }
+    { data: todayLogs },
+    { data: recentConsultationData }
   ] = await Promise.all([
 
     // Upcoming appointments count & nearest appointment
     supabase.from("appointments")
-      .select("*", { count: "exact" })
+      .select("*, doctors(id, full_name, specialization, clinic_name, profile_photo)", { count: "exact" })
       .eq("patient_id", user.id)
+      .in("status", ["Scheduled", "Rescheduled", "Pending Confirmation", "Pending", "Confirmed", "In Progress"])
       .gte("appointment_date", new Date().toISOString().split('T')[0])
       .order("appointment_date", { ascending: true })
       .order("appointment_time", { ascending: true }),
@@ -77,7 +79,15 @@ export default async function DashboardPage() {
     supabase.from("medicine_adherence_logs")
       .select("*")
       .eq("user_id", user.id)
-      .eq("scheduled_date", new Date().toISOString().split('T')[0])
+      .eq("scheduled_date", new Date().toISOString().split('T')[0]),
+      
+    // Recent Consultation
+    supabase.from("appointments")
+      .select("*, doctors(id, full_name, specialization, clinic_name, profile_photo)")
+      .eq("patient_id", user.id)
+      .eq("status", "Completed")
+      .order("appointment_date", { ascending: false })
+      .limit(1)
   ]);
 
   return (
@@ -96,6 +106,7 @@ export default async function DashboardPage() {
       notifications={notificationsResponse.data || []}
       activeReminders={activeReminders || []}
       todayLogs={todayLogs || []}
+      recentConsultation={recentConsultationData?.[0] || null}
     />
   );
 }

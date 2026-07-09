@@ -1,26 +1,36 @@
 import * as React from "react";
 import { createClient } from "@/lib/supabase/server";
 import { AppointmentsClient } from "@/features/patient/appointments/components/AppointmentsClient";
+import { redirect } from "next/navigation";
+import { ROUTES } from "@/config/routes";
 
-export default async function AppointmentsPage() {
+export const metadata = {
+  title: "My Appointments - Nirogitanman",
+  description: "Manage your doctor appointments.",
+};
+
+export default async function MyAppointmentsPage() {
   const supabase = await createClient();
   
-  // Get the current user session
   const { data: { user } } = await supabase.auth.getUser();
   
   if (!user) {
-    return (
-      <div className="flex h-[50vh] items-center justify-center">
-        <p className="text-muted-foreground">Not authenticated</p>
-      </div>
-    );
+    redirect(ROUTES.LOGIN);
   }
 
-  // Fetch the user's appointments
-  // Order by date ascending so upcoming ones show closest first
+  // Fetch the user's appointments with joined doctor info
   const { data: appointments, error } = await supabase
     .from('appointments')
-    .select('*')
+    .select(`
+      *,
+      doctors (
+        id,
+        full_name,
+        specialization,
+        clinic_name,
+        profile_photo
+      )
+    `)
     .eq('patient_id', user.id)
     .order('appointment_date', { ascending: true })
     .order('appointment_time', { ascending: true });
@@ -29,5 +39,5 @@ export default async function AppointmentsPage() {
     console.error("Error fetching appointments:", error);
   }
 
-  return <AppointmentsClient patientId={user.id} appointments={appointments || []} />;
+  return <AppointmentsClient patientId={user.id} initialAppointments={appointments || []} />;
 }

@@ -48,7 +48,7 @@ export async function bookAppointment(data: BookAppointmentInput) {
 
     // Revalidate dashboard and appointments paths
     revalidatePath(ROUTES.DASHBOARD);
-    revalidatePath("/dashboard/appointments");
+    revalidatePath("/dashboard/my-appointments");
 
     return { success: true };
   } catch (err) {
@@ -87,7 +87,7 @@ export async function cancelAppointment(appointmentId: string) {
     });
 
     revalidatePath(ROUTES.DASHBOARD);
-    revalidatePath("/dashboard/appointments");
+    revalidatePath("/dashboard/my-appointments");
 
     return { success: true };
   } catch (err) {
@@ -137,11 +137,131 @@ export async function updateAppointment(appointmentId: string, data: { appointme
     });
 
     revalidatePath(ROUTES.DASHBOARD);
-    revalidatePath("/dashboard/appointments");
+    revalidatePath("/dashboard/my-appointments");
 
     return { success: true };
   } catch (err) {
     console.error("Unexpected error:", err);
     return { error: "An unexpected error occurred." };
+  }
+}
+
+// ==========================================
+// MOCK DOCTOR ACTIONS for Testing Workflow
+// ==========================================
+
+export async function mockDoctorConfirm(appointmentId: string) {
+  try {
+    const supabase = await createClient();
+    const { data, error } = await supabase
+      .from("appointments")
+      .update({ status: "Confirmed", updated_at: new Date().toISOString() })
+      .eq("id", appointmentId)
+      .select("patient_id")
+      .single();
+
+    if (error || !data) throw error;
+
+    await sendNotification({
+      userId: data.patient_id,
+      type: "Appointment",
+      title: "Appointment Confirmed",
+      message: "The doctor has confirmed your appointment.",
+      referenceId: appointmentId,
+      referenceType: "appointment",
+    });
+
+    revalidatePath(ROUTES.DASHBOARD);
+    revalidatePath("/dashboard/my-appointments");
+    return { success: true };
+  } catch (e) {
+    return { error: "Failed to confirm" };
+  }
+}
+
+export async function mockStartConsultation(appointmentId: string) {
+  try {
+    const supabase = await createClient();
+    const { data, error } = await supabase
+      .from("appointments")
+      .update({ status: "In Progress", updated_at: new Date().toISOString() })
+      .eq("id", appointmentId)
+      .select("patient_id")
+      .single();
+
+    if (error || !data) throw error;
+
+    await sendNotification({
+      userId: data.patient_id,
+      type: "Appointment",
+      title: "Consultation Started",
+      message: "Your doctor has started the consultation.",
+      referenceId: appointmentId,
+      referenceType: "appointment",
+    });
+
+    revalidatePath(ROUTES.DASHBOARD);
+    revalidatePath("/dashboard/my-appointments");
+    return { success: true };
+  } catch (e) {
+    return { error: "Failed to start" };
+  }
+}
+
+export async function mockCompleteConsultation(appointmentId: string) {
+  try {
+    const supabase = await createClient();
+    const { data, error } = await supabase
+      .from("appointments")
+      .update({ status: "Completed", updated_at: new Date().toISOString() })
+      .eq("id", appointmentId)
+      .select("patient_id")
+      .single();
+
+    if (error || !data) throw error;
+
+    await sendNotification({
+      userId: data.patient_id,
+      type: "Appointment",
+      title: "Consultation Completed",
+      message: "Your consultation has been marked as completed.",
+      referenceId: appointmentId,
+      referenceType: "appointment",
+    });
+
+    revalidatePath(ROUTES.DASHBOARD);
+    revalidatePath("/dashboard/my-appointments");
+    return { success: true };
+  } catch (e) {
+    return { error: "Failed to complete" };
+  }
+}
+
+export async function mockRejectAppointment(appointmentId: string) {
+  try {
+    const supabase = await createClient();
+    const { data, error } = await supabase
+      .from("appointments")
+      .update({ status: "Rejected", updated_at: new Date().toISOString() })
+      .eq("id", appointmentId)
+      .select("patient_id")
+      .single();
+
+    if (error || !data) throw error;
+
+    await sendNotification({
+      userId: data.patient_id,
+      type: "Appointment",
+      title: "Appointment Rejected",
+      message: "The doctor is unable to take your appointment at this time.",
+      referenceId: appointmentId,
+      referenceType: "appointment",
+    });
+
+    revalidatePath(ROUTES.DASHBOARD);
+    revalidatePath("/dashboard/my-appointments");
+    return { success: true };
+  } catch (e) {
+    return { error: "Failed to reject" };
   }
 }

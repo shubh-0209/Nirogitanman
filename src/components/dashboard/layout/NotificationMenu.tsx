@@ -83,7 +83,7 @@ export function NotificationMenu({ userId }: { userId: string }) {
     } else if (notification.reference_type === "prescription") {
       router.push(`${ROUTES.DASHBOARD}/prescriptions`);
     } else if (notification.reference_type === "medical_record") {
-      router.push(`${ROUTES.DASHBOARD}/medical-records`);
+      router.push(`${ROUTES.DASHBOARD}/lab-reports`);
     } else {
       router.push(`${ROUTES.DASHBOARD}/notifications`);
     }

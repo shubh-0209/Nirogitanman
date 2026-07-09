@@ -12,7 +12,8 @@ import {
   MapPin,
   Video,
   Upload,
-  ActivitySquare
+  ActivitySquare,
+  CheckCircle2
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -45,7 +46,8 @@ interface DashboardClientProps {
     labReports: number;
     notifications: number;
   };
-  nextAppointment: Appointment | null;
+  nextAppointment: any | null;
+  recentConsultation?: any | null;
   recentLabReports: LabReport[];
   prescriptions: Prescription[];
   notifications: Notification[];
@@ -57,6 +59,7 @@ export function DashboardClient({
   profile,
   counts,
   nextAppointment,
+  recentConsultation,
   recentLabReports,
   prescriptions,
   notifications,
@@ -157,7 +160,7 @@ export function DashboardClient({
           </div>
         </div>
         <div className="flex gap-3">
-          <Link href={`${ROUTES.DASHBOARD}/appointments`}>
+          <Link href={`${ROUTES.DASHBOARD}/consult-doctor`}>
             <Button className="shadow-sm">Book Appointment</Button>
           </Link>
         </div>
@@ -194,11 +197,10 @@ export function DashboardClient({
       <DashboardGrid columns={2}>
         {/* Left Column - Priority Items */}
         <div className="flex flex-col gap-6">
-          {/* Next Appointment Widget */}
           <WidgetContainer 
             title="Next Appointment" 
             action={
-              <Link href={`${ROUTES.DASHBOARD}/appointments`} className="text-sm font-medium text-primary hover:underline">
+              <Link href={`${ROUTES.DASHBOARD}/my-appointments`} className="text-sm font-medium text-primary hover:underline">
                 View All
               </Link>
             }
@@ -215,18 +217,23 @@ export function DashboardClient({
                 </div>
                 <div className="flex-1 flex flex-col justify-center">
                   <div className="flex items-center justify-between mb-1">
-                    <h3 className="font-semibold text-gray-900">{nextAppointment.department}</h3>
+                    <h3 className="font-semibold text-gray-900">
+                      {nextAppointment.doctors ? `Dr. ${nextAppointment.doctors.full_name}` : nextAppointment.department}
+                    </h3>
                     <StatusBadge 
                       variant={
-                        nextAppointment.status === "Scheduled" || nextAppointment.status === "Confirmed" ? "primary" :
+                        ["Scheduled", "Confirmed", "In Progress"].includes(nextAppointment.status) ? "primary" :
                         nextAppointment.status === "Completed" ? "success" :
-                        nextAppointment.status === "Cancelled" ? "destructive" :
+                        ["Cancelled", "Rejected"].includes(nextAppointment.status) ? "destructive" :
                         "default"
                       }
                     >
                       {nextAppointment.status}
                     </StatusBadge>
                   </div>
+                  {nextAppointment.doctors && (
+                    <p className="text-sm text-gray-500 mb-1">{nextAppointment.doctors.specialization} • {nextAppointment.doctors.clinic_name}</p>
+                  )}
                   <div className="flex items-center text-sm text-gray-500 gap-4 mt-2">
                     <span className="flex items-center gap-1.5">
                       <Clock className="w-4 h-4 text-gray-400" />
@@ -250,11 +257,37 @@ export function DashboardClient({
                 description="You don't have any appointments scheduled at the moment."
                 action={{
                   label: "Book Appointment",
-                  href: `${ROUTES.DASHBOARD}/appointments`
+                  href: `${ROUTES.DASHBOARD}/consult-doctor`
                 }}
               />
             )}
           </WidgetContainer>
+
+          {/* Recent Consultation Widget */}
+          {recentConsultation && (
+            <WidgetContainer 
+              title="Recent Consultation"
+              action={
+                <Link href={`${ROUTES.DASHBOARD}/my-appointments/${recentConsultation.id}`} className="text-sm font-medium text-primary hover:underline">
+                  View Details
+                </Link>
+              }
+            >
+              <div className="flex items-center gap-4 p-4 rounded-xl border bg-white">
+                <Avatar className="h-12 w-12 border">
+                  <AvatarImage src={recentConsultation.doctors?.profile_photo || ""} />
+                  <AvatarFallback>{recentConsultation.doctors?.full_name?.substring(0,2).toUpperCase()}</AvatarFallback>
+                </Avatar>
+                <div className="flex-1">
+                  <h4 className="font-semibold text-gray-900">Dr. {recentConsultation.doctors?.full_name}</h4>
+                  <p className="text-xs text-gray-500 mt-0.5">{format(new Date(recentConsultation.appointment_date), "MMMM d, yyyy")}</p>
+                </div>
+                <div className="bg-emerald-50 text-emerald-600 p-2 rounded-full">
+                  <CheckCircle2 className="w-5 h-5" />
+                </div>
+              </div>
+            </WidgetContainer>
+          )}
 
           {/* Recent Lab Reports Widget */}
           <WidgetContainer 
@@ -307,16 +340,16 @@ export function DashboardClient({
                 href={`${ROUTES.DASHBOARD}/profile`}
               />
               <QuickActionCard
-                title="Upload Record"
+                title="Upload Report"
                 description="Add new documents"
                 icon={Upload}
-                href={`${ROUTES.DASHBOARD}/medical-records`}
+                href={`${ROUTES.DASHBOARD}/lab-reports`}
               />
               <QuickActionCard
                 title="Book Visit"
                 description="Schedule an appointment"
                 icon={Calendar}
-                href={`${ROUTES.DASHBOARD}/appointments`}
+                href={`${ROUTES.DASHBOARD}/consult-doctor`}
               />
               <QuickActionCard
                 title="Health Tools"
