@@ -71,39 +71,8 @@ export function DashboardClient({
   const router = useRouter();
   const supabase = createClient();
 
-  React.useEffect(() => {
-    const channel = supabase
-      .channel('dashboard_realtime')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'appointments',
-          filter: profile ? `patient_id=eq.${profile.id}` : undefined
-        },
-        () => {
-          router.refresh();
-        }
-      )
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'notifications',
-          filter: profile ? `user_id=eq.${profile.id}` : undefined
-        },
-        () => {
-          router.refresh();
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [supabase, router, profile]);
+  // Real-time subscriptions removed to prevent excessive full-page re-renders.
+  // The dashboard now acts as a fast, static snapshot on load.
 
   React.useEffect(() => {
     const now = new Date();

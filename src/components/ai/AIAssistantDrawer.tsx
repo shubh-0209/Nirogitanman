@@ -89,15 +89,17 @@ export function AIAssistantDrawer() {
         aria-modal="true"
         aria-label="AI Assistant"
         className={cn(
-          "fixed z-[70] bg-white shadow-2xl flex transition-transform duration-500 overflow-hidden",
+          "fixed z-[70] bg-white shadow-2xl flex transition-all duration-300 overflow-hidden",
           // Mobile: Full screen bottom sheet
-          "inset-x-0 bottom-0 top-0 rounded-t-2xl md:rounded-none",
-          // Desktop: Right side panel (420px width)
-          "md:inset-y-0 md:right-0 md:left-auto md:w-[420px] lg:w-[420px] md:border-l",
+          "inset-x-0 bottom-0 top-0 rounded-t-2xl md:rounded-2xl",
+          // Desktop: Floating card near the button
+          "md:inset-auto md:bottom-24 md:right-6 md:w-[360px] md:border md:border-gray-200 md:rounded-2xl md:shadow-xl",
+          // Dynamic height based on whether messages exist
+          messages.length > 0 ? "md:h-[500px] md:max-h-[500px]" : "md:h-auto md:max-h-[500px]",
           // Transform logic
           isOpen 
-            ? "translate-y-0 md:translate-x-0" 
-            : "translate-y-full md:translate-y-0 md:translate-x-full"
+            ? "translate-y-0 md:translate-y-0 opacity-100 scale-100" 
+            : "translate-y-full md:translate-y-8 md:opacity-0 md:scale-95 md:pointer-events-none"
         )}
       >
         
@@ -112,11 +114,11 @@ export function AIAssistantDrawer() {
         />
 
         <div className={cn(
-          "flex flex-col w-full h-full bg-white transition-transform duration-300",
+          "flex flex-col w-full flex-1 bg-white transition-transform duration-300",
           isHistoryOpen && "md:translate-x-64" // Optional visual push effect, though sidebar overlaps
         )}>
           {/* Header */}
-          <div className="flex items-center justify-between p-4 border-b bg-gray-50/50 shrink-0">
+          <div className="flex items-center justify-between p-3 border-b bg-gray-50/50 shrink-0">
             <div className="flex items-center gap-3">
               <button 
                 onClick={() => setIsHistoryOpen(!isHistoryOpen)}
